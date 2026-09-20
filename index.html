@@ -53,7 +53,7 @@
         import { initializeApp } from "https://www.gstatic.com/firebasejs/10.8.0/firebase-app.js";
         import { getFirestore, collection, query, where, getDocs, doc, updateDoc, increment } from "https://www.gstatic.com/firebasejs/10.8.0/firebase-firestore.js";
 
-        // YAHAN APNA FIREBASE CONFIG PASTE KAREIN
+        // Firebase Configuration
         const firebaseConfig = {
             apiKey: "AIzaSyCy2eAzZQ9n6v_DbAlW-v4OnGYM-_l5Kpc",
             authDomain: "firepannel.firebaseapp.com",
@@ -67,7 +67,7 @@
         const db = getFirestore(app);
 
         const urlParams = new URLSearchParams(window.location.search);
-        const shortCode = urlParams.get('s');
+        const shortCode = urlParams.get('id'); // Fix: 's' ki jagah 'id' kar diya gaya hai
 
         const timerBox = document.getElementById('timer-box');
         const errorBox = document.getElementById('error-box');
