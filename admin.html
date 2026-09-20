@@ -1,0 +1,211 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Daniel Mods - Admin Dashboard</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+</head>
+<body class="bg-slate-950 text-slate-100 min-h-screen font-sans">
+
+    <!-- Login Section -->
+    <div id="auth-section" class="flex items-center justify-center min-h-screen p-4">
+        <div class="bg-slate-900 border border-slate-800 p-8 rounded-2xl shadow-2xl max-w-sm w-full">
+            <h2 class="text-2xl font-bold text-emerald-400 mb-2 text-center">Admin Login</h2>
+            <p class="text-slate-400 text-xs mb-6 text-center">Enter your Firebase credentials to manage links</p>
+            
+            <form id="login-form" class="space-y-4">
+                <div>
+                    <label class="block text-xs font-semibold text-slate-400 mb-1">Email Address</label>
+                    <input type="email" id="email" required class="w-full bg-slate-950 border border-slate-800 rounded-xl px-4 py-3 text-sm focus:outline-none focus:border-emerald-500 text-slate-200">
+                </div>
+                <div>
+                    <label class="block text-xs font-semibold text-slate-400 mb-1">Password</label>
+                    <input type="password" id="password" required class="w-full bg-slate-950 border border-slate-800 rounded-xl px-4 py-3 text-sm focus:outline-none focus:border-emerald-500 text-slate-200">
+                </div>
+                <button type="submit" class="w-full bg-emerald-500 hover:bg-emerald-600 text-slate-950 font-semibold py-3 rounded-xl transition duration-200">Login</button>
+                <p id="login-error" class="text-rose-400 text-xs text-center hidden mt-2"></p>
+            </form>
+        </div>
+    </div>
+
+    <!-- Dashboard Section (Hidden by default) -->
+    <div id="dashboard-section" class="hidden max-w-4xl mx-auto p-4 sm:p-6 space-y-6">
+        <header class="flex justify-between items-center bg-slate-900 border border-slate-800 p-4 rounded-2xl">
+            <h1 class="text-lg font-bold text-emerald-400">Daniel Mods Admin</h1>
+            <button id="logout-btn" class="bg-rose-500/10 border border-rose-500/30 text-rose-400 px-4 py-2 rounded-xl text-xs font-semibold hover:bg-rose-500/20 transition">Logout</button>
+        </header>
+
+        <!-- Create Link Card -->
+        <div class="bg-slate-900 border border-slate-800 p-6 rounded-2xl space-y-4">
+            <h3 class="text-md font-semibold text-slate-200">Create New Short Link</h3>
+            <form id="create-form" class="grid grid-cols-1 sm:grid-cols-3 gap-4">
+                <input type="url" id="original-url" placeholder="Destination URL (https://...)" required class="sm:col-span-2 bg-slate-950 border border-slate-800 rounded-xl px-4 py-3 text-sm focus:outline-none focus:border-emerald-500 text-slate-200">
+                <input type="text" id="short-code" placeholder="Custom Code (optional)" class="bg-slate-950 border border-slate-800 rounded-xl px-4 py-3 text-sm focus:outline-none focus:border-emerald-500 text-slate-200">
+                <button type="submit" class="sm:col-span-3 bg-emerald-500 hover:bg-emerald-600 text-slate-950 font-semibold py-3 rounded-xl transition">Generate Link</button>
+            </form>
+        </div>
+
+        <!-- Links Management Table -->
+        <div class="bg-slate-900 border border-slate-800 rounded-2xl overflow-hidden">
+            <div class="p-4 border-b border-slate-800 font-semibold text-sm text-slate-300">Manage Existing Links</div>
+            <div class="overflow-x-auto">
+                <table class="w-full text-left text-sm">
+                    <thead class="bg-slate-950 text-slate-400 uppercase text-xs">
+                        <tr>
+                            <th class="p-4">Short Code</th>
+                            <th class="p-4">Original URL</th>
+                            <th class="p-4">Clicks</th>
+                            <th class="p-4">Status</th>
+                            <th class="p-4">Actions</th>
+                        </tr>
+                    </thead>
+                    <tbody id="links-table-body" class="divide-y divide-slate-800">
+                        <!-- Dynamic items will load here -->
+                    </tbody>
+                </table>
+            </div>
+        </div>
+    </div>
+
+    <!-- Firebase SDKs -->
+    <script type="module">
+        import { initializeApp } from "https://www.gstatic.com/firebasejs/10.8.0/firebase-app.js";
+        import { getAuth, signInWithEmailAndPassword, signOut, onAuthStateChanged } from "https://www.gstatic.com/firebasejs/10.8.0/firebase-auth.js";
+        import { getFirestore, collection, getDocs, doc, deleteDoc, updateDoc, addDoc } from "https://www.gstatic.com/firebasejs/10.8.0/firebase-firestore.js";
+
+        // YAHAN APNA FIREBASE CONFIG PASTE KAREIN
+        const firebaseConfig = {
+            apiKey: "AIzaSyCy2eAzZQ9n6v_DbAlW-v4OnGYM-_l5Kpc",
+            authDomain: "firepannel.firebaseapp.com",
+            projectId: "firepannel",
+            storageBucket: "firepannel.firebasestorage.app",
+            messagingSenderId: "630511495335",
+            appId: "1:630511495335:web:cbab90bf6e54266e97d382"
+        };
+
+        const app = initializeApp(firebaseConfig);
+        const auth = getAuth(app);
+        const db = getFirestore(app);
+
+        const authSection = document.getElementById('auth-section');
+        const dashboardSection = document.getElementById('dashboard-section');
+        const loginForm = document.getElementById('login-form');
+        const loginError = document.getElementById('login-error');
+        const logoutBtn = document.getElementById('logout-btn');
+        const createForm = document.getElementById('create-form');
+        const linksTableBody = document.getElementById('links-table-body');
+
+        // Auth State Listener
+        onAuthStateChanged(auth, (user) => {
+            if (user) {
+                authSection.classList.add('hidden');
+                dashboardSection.classList.remove('hidden');
+                loadLinks();
+            } else {
+                authSection.classList.remove('hidden');
+                dashboardSection.classList.add('hidden');
+            }
+        });
+
+        // Login Handler
+        loginForm.onsubmit = async (e) => {
+            e.preventDefault();
+            loginError.classList.add('hidden');
+            const email = document.getElementById('email').value;
+            const password = document.getElementById('password').value;
+
+            try {
+                await signInWithEmailAndPassword(auth, email, password);
+            } catch (error) {
+                loginError.innerText = error.message;
+                loginError.classList.remove('hidden');
+            }
+        };
+
+        // Logout Handler
+        logoutBtn.onclick = () => signOut(auth);
+
+        // Create Link
+        createForm.onsubmit = async (e) => {
+            e.preventDefault();
+            const originalUrl = document.getElementById('original-url').value;
+            let shortCode = document.getElementById('short-code').value.trim();
+
+            if (!shortCode) {
+                shortCode = Math.random().toString(36).substring(2, 8);
+            }
+
+            try {
+                await addDoc(collection(db, "links"), {
+                    originalUrl,
+                    shortCode,
+                    clicks: 0,
+                    active: true
+                });
+                createForm.reset();
+                loadLinks();
+            } catch (err) {
+                alert("Error creating link: " + err.message);
+            }
+        };
+
+        // Load Links Table
+        async function loadLinks() {
+            linksTableBody.innerHTML = `<tr><td colspan="5" class="p-4 text-center text-slate-500">Loading links...</td></tr>`;
+            try {
+                const querySnapshot = await getDocs(collection(db, "links"));
+                linksTableBody.innerHTML = "";
+                
+                if(querySnapshot.empty) {
+                    linksTableBody.innerHTML = `<tr><td colspan="5" class="p-4 text-center text-slate-500">No links created yet.</td></tr>`;
+                    return;
+                }
+
+                querySnapshot.forEach((documentSnapshot) => {
+                    const data = documentSnapshot.data();
+                    const docId = documentSnapshot.id;
+                    const tr = document.createElement('tr');
+                    tr.className = "hover:bg-slate-950/50 transition";
+                    tr.innerHTML = `
+                        <td class="p-4 font-mono text-emerald-400">${data.shortCode}</td>
+                        <td class="p-4 truncate max-w-xs text-slate-300"><a href="${data.originalUrl}" target="_blank" class="hover:underline">${data.originalUrl}</a></td>
+                        <td class="p-4 text-slate-300">${data.clicks || 0}</td>
+                        <td class="p-4"><span class="px-2 py-1 rounded text-xs ${data.active ? 'bg-emerald-500/10 text-emerald-400 border border-emerald-500/30' : 'bg-rose-500/10 text-rose-400 border border-rose-500/30'}">${data.active ? 'Active' : 'Inactive'}</span></td>
+                        <td class="p-4 space-x-2">
+                            <button onclick="toggleStatus('${docId}', ${data.active})" class="text-xs bg-slate-800 hover:bg-slate-700 px-3 py-1.5 rounded-lg text-slate-200 transition">${data.active ? 'Disable' : 'Enable'}</button>
+                            <button onclick="deleteLink('${docId}')" class="text-xs bg-rose-500/10 text-rose-400 hover:bg-rose-500/20 px-3 py-1.5 rounded-lg border border-rose-500/30 transition">Delete</button>
+                        </td>
+                    `;
+                    linksTableBody.appendChild(tr);
+                });
+            } catch (err) {
+                console.error(err);
+                linksTableBody.innerHTML = `<tr><td colspan="5" class="p-4 text-center text-rose-400">Failed to load links.</td></tr>`;
+            }
+        }
+
+        // Global functions for actions in table
+        window.toggleStatus = async (docId, currentStatus) => {
+            try {
+                const docRef = doc(db, "links", docId);
+                await updateDoc(docRef, { active: !currentStatus });
+                loadLinks();
+            } catch(err) {
+                alert("Error updating status");
+            }
+        };
+
+        window.deleteLink = async (docId) => {
+            if(confirm("Are you sure you want to delete this link?")) {
+                try {
+                    await deleteDoc(doc(db, "links", docId));
+                    loadLinks();
+                } catch(err) {
+                    alert("Error deleting link");
+                }
+            }
+        };
+    </script>
+</body>
+</html>

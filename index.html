@@ -1,0 +1,167 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Daniel Mods - Fast URL Shortener</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+</head>
+<body class="bg-slate-950 text-slate-100 min-h-screen flex flex-col justify-between font-sans">
+
+    <!-- Header -->
+    <header class="p-4 text-center border-b border-slate-800 bg-slate-900/50 backdrop-blur">
+        <h1 class="text-xl font-bold tracking-wider text-emerald-400">DANIEL MODS</h1>
+    </header>
+
+    <!-- Main Container -->
+    <main class="max-w-md w-full mx-auto p-4 flex-grow flex items-center justify-center">
+        <div class="bg-slate-900 border border-slate-800 rounded-2xl p-6 shadow-xl w-full text-center">
+            
+            <!-- Default / Link Input or Loading View -->
+            <div id="content-view">
+                <div id="status-icon" class="text-emerald-400 text-5xl mb-3">🔗</div>
+                <h2 id="main-title" class="text-lg font-semibold mb-2">Secure Link Redirection</h2>
+                <p id="main-desc" class="text-slate-400 text-sm mb-6">Please wait while we prepare your destination link safely.</p>
+
+                <!-- Countdown Box (Hidden by default until target link is loaded) -->
+                <div id="timer-box" class="hidden space-y-4">
+                    <div class="relative w-24 h-24 mx-auto flex items-center justify-center rounded-full border-4 border-emerald-500/20 bg-slate-950">
+                        <span id="countdown-number" class="text-3xl font-bold text-emerald-400">10</span>
+                    </div>
+                    <div id="step-indicator" class="text-xs text-slate-400 uppercase tracking-widest font-semibold">Step 1 of 2</div>
+                    <button id="action-btn" disabled class="w-full py-3 px-4 bg-slate-800 text-slate-500 font-medium rounded-xl cursor-not-allowed transition duration-200">
+                        Please Wait...
+                    </button>
+                </div>
+
+                <!-- Error View -->
+                <div id="error-box" class="hidden text-rose-400 text-sm bg-rose-950/30 border border-rose-900/50 p-4 rounded-xl">
+                    Link not found, disabled, or expired!
+                </div>
+            </div>
+
+        </div>
+    </main>
+
+    <!-- Footer -->
+    <footer class="p-4 text-center text-xs text-slate-500 border-t border-slate-900">
+        &copy; 2026 Daniel Mods. All Rights Reserved.
+    </footer>
+
+    <!-- Firebase SDKs -->
+    <script type="module">
+        import { initializeApp } from "https://www.gstatic.com/firebasejs/10.8.0/firebase-app.js";
+        import { getFirestore, collection, query, where, getDocs, doc, updateDoc, increment } from "https://www.gstatic.com/firebasejs/10.8.0/firebase-firestore.js";
+
+        // YAHAN APNA FIREBASE CONFIG PASTE KAREIN
+        const firebaseConfig = {
+            apiKey: "AIzaSyCy2eAzZQ9n6v_DbAlW-v4OnGYM-_l5Kpc",
+            authDomain: "firepannel.firebaseapp.com",
+            projectId: "firepannel",
+            storageBucket: "firepannel.firebasestorage.app",
+            messagingSenderId: "630511495335",
+            appId: "1:630511495335:web:cbab90bf6e54266e97d382"
+        };
+
+        const app = initializeApp(firebaseConfig);
+        const db = getFirestore(app);
+
+        const urlParams = new URLSearchParams(window.location.search);
+        const shortCode = urlParams.get('s');
+
+        const timerBox = document.getElementById('timer-box');
+        const errorBox = document.getElementById('error-box');
+        const countdownNumber = document.getElementById('countdown-number');
+        const actionBtn = document.getElementById('action-btn');
+        const stepIndicator = document.getElementById('step-indicator');
+        const mainTitle = document.getElementById('main-title');
+        const mainDesc = document.getElementById('main-desc');
+
+        async function initRedirect() {
+            if (!shortCode) {
+                mainTitle.innerText = "Invalid Link";
+                mainDesc.innerText = "No short code provided in the URL.";
+                errorBox.classList.remove('hidden');
+                return;
+            }
+
+            try {
+                const q = query(collection(db, "links"), where("shortCode", "==", shortCode));
+                const querySnapshot = await getDocs(q);
+
+                if (querySnapshot.empty) {
+                    errorBox.classList.remove('hidden');
+                    mainTitle.innerText = "Link Not Found";
+                    mainDesc.innerText = "This short link does not exist.";
+                    return;
+                }
+
+                let linkDocData = null;
+                let docId = null;
+                querySnapshot.forEach((docSnap) => {
+                    linkDocData = docSnap.data();
+                    docId = docSnap.id;
+                });
+
+                if (!linkDocData.active) {
+                    mainTitle.innerText = "Link Disabled";
+                    mainDesc.innerText = "This link has been temporarily disabled by the admin.";
+                    errorBox.classList.remove('hidden');
+                    return;
+                }
+
+                // Show timer interface
+                mainTitle.innerText = "Preparing Your Link";
+                mainDesc.innerText = "Complete the steps below to access your destination.";
+                timerBox.classList.remove('hidden');
+
+                // Start Double Countdown Logic (10s + 10s)
+                startCountdown(10, 1, () => {
+                    startCountdown(10, 2, async () => {
+                        // Increment Click Count
+                        const docRef = doc(db, "links", docId);
+                        await updateDoc(docRef, {
+                            clicks: increment(1)
+                        });
+                        // Redirect to original URL
+                        window.location.href = linkDocData.originalUrl;
+                    });
+                });
+
+            } catch (err) {
+                console.error(err);
+                errorBox.classList.remove('hidden');
+            }
+        }
+
+        function startCountdown(seconds, step, onComplete) {
+            let timeLeft = seconds;
+            countdownNumber.innerText = timeLeft;
+            stepIndicator.innerText = `Step ${step} of 2`;
+            actionBtn.innerText = `Please wait (${timeLeft}s)`;
+            actionBtn.disabled = true;
+            actionBtn.className = "w-full py-3 px-4 bg-slate-800 text-slate-500 font-medium rounded-xl cursor-not-allowed transition duration-200";
+
+            const timer = setInterval(() => {
+                timeLeft--;
+                countdownNumber.innerText = timeLeft;
+                actionBtn.innerText = `Please wait (${timeLeft}s)`;
+
+                if (timeLeft <= 0) {
+                    clearInterval(timer);
+                    actionBtn.innerText = step === 1 ? "Proceed to Step 2" : "Get Link Now";
+                    actionBtn.disabled = false;
+                    actionBtn.className = "w-full py-3 px-4 bg-emerald-500 hover:bg-emerald-600 text-slate-950 font-semibold rounded-xl cursor-pointer shadow-lg shadow-emerald-500/20 transition duration-200";
+                    
+                    actionBtn.onclick = () => {
+                        actionBtn.onclick = null;
+                        onComplete();
+                    };
+                }
+            }, 1000);
+        }
+
+        initRedirect();
+    </script>
+</body>
+</html>
