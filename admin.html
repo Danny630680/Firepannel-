@@ -1,211 +1,1090 @@
 <!DOCTYPE html>
 <html lang="en">
+
 <head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Daniel Mods - Admin Dashboard</title>
-    <script src="https://cdn.tailwindcss.com"></script>
+
+<meta charset="UTF-8">
+
+<meta
+  name="viewport"
+  content="width=device-width, initial-scale=1.0">
+
+<title>Daniel Mods Admin</title>
+
+<script src="https://cdn.tailwindcss.com"></script>
+
+
+<style>
+
+body {
+  overflow-x: hidden;
+}
+
+
+.bubble {
+  position: fixed;
+  border-radius: 50%;
+  filter: blur(8px);
+  opacity: 0.18;
+  pointer-events: none;
+  animation: floatBubble 12s ease-in-out infinite;
+}
+
+
+.bubble1 {
+  width: 190px;
+  height: 190px;
+  background: #10b981;
+  left: -60px;
+  top: 10%;
+}
+
+
+.bubble2 {
+  width: 230px;
+  height: 230px;
+  background: #8b5cf6;
+  right: -80px;
+  top: 40%;
+  animation-delay: 2s;
+}
+
+
+.bubble3 {
+  width: 150px;
+  height: 150px;
+  background: #06b6d4;
+  left: 30%;
+  bottom: -50px;
+  animation-delay: 4s;
+}
+
+
+.bubble4 {
+  width: 120px;
+  height: 120px;
+  background: #ec4899;
+  right: 25%;
+  top: 5%;
+  animation-delay: 6s;
+}
+
+
+@keyframes floatBubble {
+
+  0%, 100% {
+    transform: translateY(0) scale(1);
+  }
+
+  50% {
+    transform: translateY(-35px) scale(1.08);
+  }
+
+}
+
+
+.glass {
+  background: rgba(15,23,42,.82);
+  backdrop-filter: blur(15px);
+}
+
+</style>
+
 </head>
-<body class="bg-slate-950 text-slate-100 min-h-screen font-sans">
 
-    <!-- Login Section -->
-    <div id="auth-section" class="flex items-center justify-center min-h-screen p-4">
-        <div class="bg-slate-900 border border-slate-800 p-8 rounded-2xl shadow-2xl max-w-sm w-full">
-            <h2 class="text-2xl font-bold text-emerald-400 mb-2 text-center">Admin Login</h2>
-            <p class="text-slate-400 text-xs mb-6 text-center">Enter your Firebase credentials to manage links</p>
-            
-            <form id="login-form" class="space-y-4">
-                <div>
-                    <label class="block text-xs font-semibold text-slate-400 mb-1">Email Address</label>
-                    <input type="email" id="email" required class="w-full bg-slate-950 border border-slate-800 rounded-xl px-4 py-3 text-sm focus:outline-none focus:border-emerald-500 text-slate-200">
-                </div>
-                <div>
-                    <label class="block text-xs font-semibold text-slate-400 mb-1">Password</label>
-                    <input type="password" id="password" required class="w-full bg-slate-950 border border-slate-800 rounded-xl px-4 py-3 text-sm focus:outline-none focus:border-emerald-500 text-slate-200">
-                </div>
-                <button type="submit" class="w-full bg-emerald-500 hover:bg-emerald-600 text-slate-950 font-semibold py-3 rounded-xl transition duration-200">Login</button>
-                <p id="login-error" class="text-rose-400 text-xs text-center hidden mt-2"></p>
-            </form>
-        </div>
+
+<body class="bg-slate-950 text-white min-h-screen">
+
+
+<div class="bubble bubble1"></div>
+<div class="bubble bubble2"></div>
+<div class="bubble bubble3"></div>
+<div class="bubble bubble4"></div>
+
+
+<!-- LOGIN -->
+
+<div
+  id="loginPage"
+  class="relative z-10 min-h-screen
+         flex items-center justify-center p-4">
+
+
+  <div
+    class="glass border border-slate-800
+           rounded-3xl p-6 w-full max-w-md
+           shadow-2xl">
+
+
+    <h1
+      class="text-2xl font-black
+             text-emerald-400 text-center">
+
+      DANIEL MODS
+
+    </h1>
+
+
+    <p
+      class="text-sm text-slate-400
+             text-center mt-1">
+
+      Admin Login
+
+    </p>
+
+
+    <div class="mt-6 space-y-3">
+
+
+      <input
+        id="email"
+        type="email"
+        placeholder="Email"
+        class="w-full bg-slate-900
+               border border-slate-800
+               rounded-xl p-3 outline-none">
+
+
+      <input
+        id="password"
+        type="password"
+        placeholder="Password"
+        class="w-full bg-slate-900
+               border border-slate-800
+               rounded-xl p-3 outline-none">
+
+
+      <button
+        id="loginButton"
+        class="w-full bg-emerald-500
+               hover:bg-emerald-600
+               text-slate-950
+               font-bold py-3 rounded-xl">
+
+        Login
+
+      </button>
+
+
+      <p
+        id="loginError"
+        class="hidden text-red-400
+               text-sm text-center">
+      </p>
+
+
     </div>
 
-    <!-- Dashboard Section (Hidden by default) -->
-    <div id="dashboard-section" class="hidden max-w-4xl mx-auto p-4 sm:p-6 space-y-6">
-        <header class="flex justify-between items-center bg-slate-900 border border-slate-800 p-4 rounded-2xl">
-            <h1 class="text-lg font-bold text-emerald-400">Daniel Mods Admin</h1>
-            <button id="logout-btn" class="bg-rose-500/10 border border-rose-500/30 text-rose-400 px-4 py-2 rounded-xl text-xs font-semibold hover:bg-rose-500/20 transition">Logout</button>
-        </header>
+  </div>
 
-        <!-- Create Link Card -->
-        <div class="bg-slate-900 border border-slate-800 p-6 rounded-2xl space-y-4">
-            <h3 class="text-md font-semibold text-slate-200">Create New Short Link</h3>
-            <form id="create-form" class="grid grid-cols-1 sm:grid-cols-3 gap-4">
-                <input type="url" id="original-url" placeholder="Destination URL (https://...)" required class="sm:col-span-2 bg-slate-950 border border-slate-800 rounded-xl px-4 py-3 text-sm focus:outline-none focus:border-emerald-500 text-slate-200">
-                <input type="text" id="short-code" placeholder="Custom Code (optional)" class="bg-slate-950 border border-slate-800 rounded-xl px-4 py-3 text-sm focus:outline-none focus:border-emerald-500 text-slate-200">
-                <button type="submit" class="sm:col-span-3 bg-emerald-500 hover:bg-emerald-600 text-slate-950 font-semibold py-3 rounded-xl transition">Generate Link</button>
-            </form>
-        </div>
+</div>
 
-        <!-- Links Management Table -->
-        <div class="bg-slate-900 border border-slate-800 rounded-2xl overflow-hidden">
-            <div class="p-4 border-b border-slate-800 font-semibold text-sm text-slate-300">Manage Existing Links</div>
-            <div class="overflow-x-auto">
-                <table class="w-full text-left text-sm">
-                    <thead class="bg-slate-950 text-slate-400 uppercase text-xs">
-                        <tr>
-                            <th class="p-4">Short Code</th>
-                            <th class="p-4">Original URL</th>
-                            <th class="p-4">Clicks</th>
-                            <th class="p-4">Status</th>
-                            <th class="p-4">Actions</th>
-                        </tr>
-                    </thead>
-                    <tbody id="links-table-body" class="divide-y divide-slate-800">
-                        <!-- Dynamic items will load here -->
-                    </tbody>
-                </table>
-            </div>
-        </div>
+
+
+<!-- DASHBOARD -->
+
+<div
+  id="dashboard"
+  class="hidden relative z-10
+         max-w-5xl mx-auto p-4 sm:p-6">
+
+
+  <!-- HEADER -->
+
+  <header
+    class="glass border border-slate-800
+           rounded-2xl p-4
+           flex justify-between
+           items-center mb-6">
+
+
+    <div>
+
+      <h1
+        class="text-lg font-black
+               text-emerald-400">
+
+        DANIEL MODS ADMIN
+
+      </h1>
+
+      <p
+        class="text-xs text-slate-400">
+
+        Dashboard
+
+      </p>
+
     </div>
 
-    <!-- Firebase SDKs -->
-    <script type="module">
-        import { initializeApp } from "https://www.gstatic.com/firebasejs/10.8.0/firebase-app.js";
-        import { getAuth, signInWithEmailAndPassword, signOut, onAuthStateChanged } from "https://www.gstatic.com/firebasejs/10.8.0/firebase-auth.js";
-        import { getFirestore, collection, getDocs, doc, deleteDoc, updateDoc, addDoc } from "https://www.gstatic.com/firebasejs/10.8.0/firebase-firestore.js";
 
-        // YAHAN APNA FIREBASE CONFIG PASTE KAREIN
-        const firebaseConfig = {
-            apiKey: "AIzaSyCy2eAzZQ9n6v_DbAlW-v4OnGYM-_l5Kpc",
-            authDomain: "firepannel.firebaseapp.com",
-            projectId: "firepannel",
-            storageBucket: "firepannel.firebasestorage.app",
-            messagingSenderId: "630511495335",
-            appId: "1:630511495335:web:cbab90bf6e54266e97d382"
-        };
+    <button
+      id="logoutButton"
+      class="bg-red-500/10
+             border border-red-500/30
+             text-red-400
+             px-4 py-2
+             rounded-xl text-xs">
 
-        const app = initializeApp(firebaseConfig);
-        const auth = getAuth(app);
-        const db = getFirestore(app);
+      Logout
 
-        const authSection = document.getElementById('auth-section');
-        const dashboardSection = document.getElementById('dashboard-section');
-        const loginForm = document.getElementById('login-form');
-        const loginError = document.getElementById('login-error');
-        const logoutBtn = document.getElementById('logout-btn');
-        const createForm = document.getElementById('create-form');
-        const linksTableBody = document.getElementById('links-table-body');
+    </button>
 
-        // Auth State Listener
-        onAuthStateChanged(auth, (user) => {
-            if (user) {
-                authSection.classList.add('hidden');
-                dashboardSection.classList.remove('hidden');
-                loadLinks();
-            } else {
-                authSection.classList.remove('hidden');
-                dashboardSection.classList.add('hidden');
-            }
-        });
 
-        // Login Handler
-        loginForm.onsubmit = async (e) => {
-            e.preventDefault();
-            loginError.classList.add('hidden');
-            const email = document.getElementById('email').value;
-            const password = document.getElementById('password').value;
+  </header>
 
-            try {
-                await signInWithEmailAndPassword(auth, email, password);
-            } catch (error) {
-                loginError.innerText = error.message;
-                loginError.classList.remove('hidden');
-            }
-        };
 
-        // Logout Handler
-        logoutBtn.onclick = () => signOut(auth);
 
-        // Create Link
-        createForm.onsubmit = async (e) => {
-            e.preventDefault();
-            const originalUrl = document.getElementById('original-url').value;
-            let shortCode = document.getElementById('short-code').value.trim();
+  <!-- VERIFICATION SETTINGS -->
 
-            if (!shortCode) {
-                shortCode = Math.random().toString(36).substring(2, 8);
-            }
+  <section
+    class="glass border border-slate-800
+           rounded-2xl p-6 mb-6">
 
-            try {
-                await addDoc(collection(db, "links"), {
-                    originalUrl,
-                    shortCode,
-                    clicks: 0,
-                    active: true
-                });
-                createForm.reset();
-                loadLinks();
-            } catch (err) {
-                alert("Error creating link: " + err.message);
-            }
-        };
 
-        // Load Links Table
-        async function loadLinks() {
-            linksTableBody.innerHTML = `<tr><td colspan="5" class="p-4 text-center text-slate-500">Loading links...</td></tr>`;
-            try {
-                const querySnapshot = await getDocs(collection(db, "links"));
-                linksTableBody.innerHTML = "";
-                
-                if(querySnapshot.empty) {
-                    linksTableBody.innerHTML = `<tr><td colspan="5" class="p-4 text-center text-slate-500">No links created yet.</td></tr>`;
-                    return;
-                }
+    <h2 class="text-lg font-bold">
 
-                querySnapshot.forEach((documentSnapshot) => {
-                    const data = documentSnapshot.data();
-                    const docId = documentSnapshot.id;
-                    const tr = document.createElement('tr');
-                    tr.className = "hover:bg-slate-950/50 transition";
-                    tr.innerHTML = `
-                        <td class="p-4 font-mono text-emerald-400">${data.shortCode}</td>
-                        <td class="p-4 truncate max-w-xs text-slate-300"><a href="${data.originalUrl}" target="_blank" class="hover:underline">${data.originalUrl}</a></td>
-                        <td class="p-4 text-slate-300">${data.clicks || 0}</td>
-                        <td class="p-4"><span class="px-2 py-1 rounded text-xs ${data.active ? 'bg-emerald-500/10 text-emerald-400 border border-emerald-500/30' : 'bg-rose-500/10 text-rose-400 border border-rose-500/30'}">${data.active ? 'Active' : 'Inactive'}</span></td>
-                        <td class="p-4 space-x-2">
-                            <button onclick="toggleStatus('${docId}', ${data.active})" class="text-xs bg-slate-800 hover:bg-slate-700 px-3 py-1.5 rounded-lg text-slate-200 transition">${data.active ? 'Disable' : 'Enable'}</button>
-                            <button onclick="deleteLink('${docId}')" class="text-xs bg-rose-500/10 text-rose-400 hover:bg-rose-500/20 px-3 py-1.5 rounded-lg border border-rose-500/30 transition">Delete</button>
-                        </td>
-                    `;
-                    linksTableBody.appendChild(tr);
-                });
-            } catch (err) {
-                console.error(err);
-                linksTableBody.innerHTML = `<tr><td colspan="5" class="p-4 text-center text-rose-400">Failed to load links.</td></tr>`;
-            }
+      YouTube / Telegram Verification
+
+    </h2>
+
+
+    <p
+      class="text-xs text-slate-400
+             mt-1 mb-5">
+
+      Public shortener page के
+      verification buttons control करें।
+
+    </p>
+
+
+
+    <!-- YOUTUBE -->
+
+    <div
+      class="bg-slate-950/70
+             border border-slate-800
+             rounded-xl p-4 mb-4">
+
+
+      <label
+        class="flex items-center gap-3
+               font-semibold text-sm mb-3">
+
+
+        <input
+          id="youtubeEnabled"
+          type="checkbox"
+          class="w-4 h-4 accent-emerald-500">
+
+
+        ▶ Enable YouTube
+
+      </label>
+
+
+      <input
+        id="youtubeUrl"
+        type="url"
+        placeholder="YouTube Channel URL"
+        class="w-full bg-slate-900
+               border border-slate-800
+               rounded-xl p-3 text-sm
+               outline-none">
+
+    </div>
+
+
+
+    <!-- TELEGRAM -->
+
+    <div
+      class="bg-slate-950/70
+             border border-slate-800
+             rounded-xl p-4 mb-4">
+
+
+      <label
+        class="flex items-center gap-3
+               font-semibold text-sm mb-3">
+
+
+        <input
+          id="telegramEnabled"
+          type="checkbox"
+          class="w-4 h-4 accent-emerald-500">
+
+
+        ✈ Enable Telegram
+
+      </label>
+
+
+      <input
+        id="telegramUrl"
+        type="url"
+        placeholder="Telegram Channel URL"
+        class="w-full bg-slate-900
+               border border-slate-800
+               rounded-xl p-3 text-sm
+               outline-none">
+
+    </div>
+
+
+
+    <button
+      id="saveSettingsButton"
+      class="w-full bg-emerald-500
+             hover:bg-emerald-600
+             text-slate-950
+             font-bold py-3 rounded-xl">
+
+      Save Verification Settings
+
+    </button>
+
+
+    <p
+      id="settingsMessage"
+      class="hidden text-center
+             text-emerald-400
+             text-sm mt-3">
+
+      ✓ Settings Saved
+
+    </p>
+
+
+  </section>
+
+
+
+  <!-- CREATE SHORT LINK -->
+
+  <section
+    class="glass border border-slate-800
+           rounded-2xl p-6 mb-6">
+
+
+    <h2
+      class="text-lg font-bold mb-4">
+
+      Create New Short Link
+
+    </h2>
+
+
+    <div class="space-y-3">
+
+
+      <input
+        id="originalUrl"
+        type="url"
+        placeholder="Destination URL"
+        class="w-full bg-slate-900
+               border border-slate-800
+               rounded-xl p-3
+               outline-none">
+
+
+      <input
+        id="shortCode"
+        type="text"
+        placeholder="Custom Short Code (optional)"
+        class="w-full bg-slate-900
+               border border-slate-800
+               rounded-xl p-3
+               outline-none">
+
+
+      <button
+        id="createLinkButton"
+        class="w-full bg-emerald-500
+               hover:bg-emerald-600
+               text-slate-950
+               font-bold py-3 rounded-xl">
+
+        Generate Short Link
+
+      </button>
+
+
+      <p
+        id="createMessage"
+        class="hidden text-center
+               text-sm">
+      </p>
+
+
+    </div>
+
+  </section>
+
+
+
+  <!-- LINK TABLE -->
+
+  <section
+    class="glass border border-slate-800
+           rounded-2xl overflow-hidden">
+
+
+    <div
+      class="p-4 border-b
+             border-slate-800">
+
+
+      <h2 class="font-bold">
+
+        Manage Existing Links
+
+      </h2>
+
+
+    </div>
+
+
+    <div class="overflow-x-auto">
+
+      <table class="w-full text-sm">
+
+        <thead
+          class="bg-slate-950/70
+                 text-slate-400">
+
+
+          <tr>
+
+            <th class="p-4 text-left">
+              Short Code
+            </th>
+
+            <th class="p-4 text-left">
+              Original URL
+            </th>
+
+            <th class="p-4">
+              Clicks
+            </th>
+
+            <th class="p-4">
+              Status
+            </th>
+
+            <th class="p-4">
+              Actions
+            </th>
+
+          </tr>
+
+        </thead>
+
+
+        <tbody id="linksTable">
+
+        </tbody>
+
+      </table>
+
+    </div>
+
+  </section>
+
+
+</div>
+
+
+
+<script type="module">
+
+import {
+  initializeApp
+}
+from
+"https://www.gstatic.com/firebasejs/10.12.2/firebase-app.js";
+
+
+import {
+  getAuth,
+  signInWithEmailAndPassword,
+  onAuthStateChanged,
+  signOut
+}
+from
+"https://www.gstatic.com/firebasejs/10.12.2/firebase-auth.js";
+
+
+import {
+  getFirestore,
+  collection,
+  addDoc,
+  getDocs,
+  query,
+  orderBy,
+  doc,
+  updateDoc,
+  deleteDoc,
+  setDoc,
+  getDoc
+}
+from
+"https://www.gstatic.com/firebasejs/10.12.2/firebase-firestore.js";
+
+
+
+const firebaseConfig = {
+
+  apiKey: "AIzaSyCy2eAzZQ9n6v_DbAlW-v4OnGYM-_l5Kpc",
+
+  authDomain:
+    "firepannel.firebaseapp.com",
+
+  projectId:
+    "firepannel",
+
+  storageBucket:
+    "firepannel.appspot.com",
+
+  messagingSenderId:
+    "630511495335",
+
+  appId:
+    "1:630511495335:web:cbab90bf6e54266e97d382"
+
+};
+
+
+
+const app =
+  initializeApp(firebaseConfig);
+
+
+const auth =
+  getAuth(app);
+
+
+const db =
+  getFirestore(app);
+
+
+
+const loginPage =
+  document.getElementById("loginPage");
+
+
+const dashboard =
+  document.getElementById("dashboard");
+
+
+
+/* AUTH */
+
+onAuthStateChanged(
+  auth,
+  user => {
+
+    if (user) {
+
+      loginPage.classList.add("hidden");
+
+      dashboard.classList.remove("hidden");
+
+      loadSettings();
+
+      loadLinks();
+
+    }
+
+    else {
+
+      loginPage.classList.remove("hidden");
+
+      dashboard.classList.add("hidden");
+
+    }
+
+  }
+);
+
+
+
+/* LOGIN */
+
+document
+.getElementById("loginButton")
+.addEventListener(
+  "click",
+  async () => {
+
+    const email =
+      document.getElementById("email").value.trim();
+
+    const password =
+      document.getElementById("password").value;
+
+
+    try {
+
+      await signInWithEmailAndPassword(
+        auth,
+        email,
+        password
+      );
+
+    }
+
+    catch (error) {
+
+      const box =
+        document.getElementById("loginError");
+
+      box.classList.remove("hidden");
+
+      box.innerText =
+        "Login failed: " + error.message;
+
+    }
+
+  }
+);
+
+
+
+/* LOGOUT */
+
+document
+.getElementById("logoutButton")
+.addEventListener(
+  "click",
+  () => {
+
+    signOut(auth);
+
+  }
+);
+
+
+
+/* LOAD SETTINGS */
+
+async function loadSettings() {
+
+  const ref =
+    doc(
+      db,
+      "settings",
+      "shortener"
+    );
+
+
+  const snapshot =
+    await getDoc(ref);
+
+
+  if (!snapshot.exists()) {
+
+    return;
+
+  }
+
+
+  const data =
+    snapshot.data();
+
+
+  document
+    .getElementById("youtubeEnabled")
+    .checked =
+      data.youtubeEnabled === true;
+
+
+  document
+    .getElementById("youtubeUrl")
+    .value =
+      data.youtubeUrl || "";
+
+
+  document
+    .getElementById("telegramEnabled")
+    .checked =
+      data.telegramEnabled === true;
+
+
+  document
+    .getElementById("telegramUrl")
+    .value =
+      data.telegramUrl || "";
+
+}
+
+
+
+/* SAVE SETTINGS */
+
+document
+.getElementById("saveSettingsButton")
+.addEventListener(
+  "click",
+  async () => {
+
+    const youtubeEnabled =
+      document
+      .getElementById("youtubeEnabled")
+      .checked;
+
+
+    const youtubeUrl =
+      document
+      .getElementById("youtubeUrl")
+      .value.trim();
+
+
+    const telegramEnabled =
+      document
+      .getElementById("telegramEnabled")
+      .checked;
+
+
+    const telegramUrl =
+      document
+      .getElementById("telegramUrl")
+      .value.trim();
+
+
+    await setDoc(
+
+      doc(
+        db,
+        "settings",
+        "shortener"
+      ),
+
+      {
+        youtubeEnabled,
+        youtubeUrl,
+        telegramEnabled,
+        telegramUrl
+      },
+
+      {
+        merge: true
+      }
+
+    );
+
+
+    const message =
+      document
+      .getElementById("settingsMessage");
+
+
+    message.classList.remove("hidden");
+
+
+    setTimeout(
+      () => {
+        message.classList.add("hidden");
+      },
+      2000
+    );
+
+  }
+);
+
+
+
+/* CREATE SHORT LINK */
+
+document
+.getElementById("createLinkButton")
+.addEventListener(
+  "click",
+  async () => {
+
+    const originalUrl =
+      document
+      .getElementById("originalUrl")
+      .value.trim();
+
+
+    let shortCode =
+      document
+      .getElementById("shortCode")
+      .value.trim();
+
+
+    if (!originalUrl) {
+
+      alert("Destination URL डालें");
+
+      return;
+
+    }
+
+
+    if (!shortCode) {
+
+      shortCode =
+        Math.random()
+        .toString(36)
+        .substring(2, 8);
+
+    }
+
+
+    const links =
+      collection(db, "links");
+
+
+    const existing =
+      await getDocs(
+        query(
+          links
+        )
+      );
+
+
+    let duplicate = false;
+
+
+    existing.forEach(
+      item => {
+
+        if (
+          item.data().shortCode ===
+          shortCode
+        ) {
+
+          duplicate = true;
+
         }
 
-        // Global functions for actions in table
-        window.toggleStatus = async (docId, currentStatus) => {
-            try {
-                const docRef = doc(db, "links", docId);
-                await updateDoc(docRef, { active: !currentStatus });
-                loadLinks();
-            } catch(err) {
-                alert("Error updating status");
-            }
-        };
+      }
+    );
 
-        window.deleteLink = async (docId) => {
-            if(confirm("Are you sure you want to delete this link?")) {
-                try {
-                    await deleteDoc(doc(db, "links", docId));
-                    loadLinks();
-                } catch(err) {
-                    alert("Error deleting link");
-                }
+
+    if (duplicate) {
+
+      alert("यह Short Code पहले से मौजूद है");
+
+      return;
+
+    }
+
+
+    await addDoc(
+
+      links,
+
+      {
+        originalUrl,
+        shortCode,
+        clicks: 0,
+        active: true
+      }
+
+    );
+
+
+    document
+      .getElementById("originalUrl")
+      .value = "";
+
+
+    document
+      .getElementById("shortCode")
+      .value = "";
+
+
+    loadLinks();
+
+  }
+);
+
+
+
+/* LOAD LINKS */
+
+async function loadLinks() {
+
+  const table =
+    document.getElementById(
+      "linksTable"
+    );
+
+
+  table.innerHTML = "";
+
+
+  const snapshot =
+    await getDocs(
+      collection(
+        db,
+        "links"
+      )
+    );
+
+
+  snapshot.forEach(
+    item => {
+
+      const data =
+        item.data();
+
+
+      const tr =
+        document.createElement("tr");
+
+
+      tr.className =
+        "border-t border-slate-800";
+
+
+      tr.innerHTML = `
+
+        <td class="p-4 text-emerald-400 font-mono">
+          ${escapeHtml(data.shortCode || "")}
+        </td>
+
+        <td class="p-4 max-w-xs truncate">
+          ${escapeHtml(data.originalUrl || "")}
+        </td>
+
+        <td class="p-4 text-center">
+          ${data.clicks || 0}
+        </td>
+
+        <td class="p-4 text-center">
+
+          ${
+            data.active !== false
+
+            ? '<span class="text-emerald-400">Active</span>'
+
+            : '<span class="text-red-400">Disabled</span>'
+          }
+
+        </td>
+
+        <td class="p-4 text-center space-x-2">
+
+          <button
+            class="toggleBtn
+                   bg-slate-800
+                   px-3 py-2
+                   rounded-lg text-xs">
+
+            ${data.active !== false
+              ? "Disable"
+              : "Enable"}
+
+          </button>
+
+
+          <button
+            class="deleteBtn
+                   bg-red-500/10
+                   text-red-400
+                   px-3 py-2
+                   rounded-lg text-xs">
+
+            Delete
+
+          </button>
+
+        </td>
+      `;
+
+
+      tr
+      .querySelector(".toggleBtn")
+      .addEventListener(
+        "click",
+        async () => {
+
+          await updateDoc(
+
+            doc(
+              db,
+              "links",
+              item.id
+            ),
+
+            {
+              active:
+                data.active === false
             }
-        };
-    </script>
+
+          );
+
+
+          loadLinks();
+
+        }
+      );
+
+
+      tr
+      .querySelector(".deleteBtn")
+      .addEventListener(
+        "click",
+        async () => {
+
+          if (
+            !confirm(
+              "Delete this link?"
+            )
+          ) return;
+
+
+          await deleteDoc(
+
+            doc(
+              db,
+              "links",
+              item.id
+            )
+
+          );
+
+
+          loadLinks();
+
+        }
+      );
+
+
+      table.appendChild(tr);
+
+    }
+  );
+
+}
+
+
+
+/* SECURITY */
+
+function escapeHtml(value) {
+
+  return String(value)
+
+    .replaceAll("&", "&amp;")
+
+    .replaceAll("<", "&lt;")
+
+    .replaceAll(">", "&gt;")
+
+    .replaceAll('"', "&quot;")
+
+    .replaceAll("'", "&#039;");
+
+}
+
+</script>
+
 </body>
 </html>
