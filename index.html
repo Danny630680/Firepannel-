@@ -206,7 +206,7 @@
 
     const params = new URLSearchParams(window.location.search);
 
-    const shortCode = params.get("s");
+    const shortCode = (params.get("s") || params.get("code") || "").trim();
 
 
     if (!shortCode) {
